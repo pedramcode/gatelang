@@ -1,6 +1,5 @@
 1
-2
-3
 127.0.0.1
 3.14
 "Hello World! \"MY NAME IS PEDRAM\""
+3

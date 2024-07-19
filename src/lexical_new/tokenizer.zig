@@ -65,16 +65,16 @@ pub const Tokenizer = struct {
 
     pub fn flush_token(self: *@This(), end: bool) void {
         // TODO flushing
-        if (end) {
-            self.state = State.eof;
-            self.reset_buffer();
-        }
-        std.debug.print("{s}\t[{s}]\n", .{ @tagName(self.state), self.buffer });
+
+        std.debug.print("{s}\t{s}\n", .{ @tagName(self.state), self.buffer });
         self.reset_buffer();
         if (!end) {
             self.state = State.default;
-            self.next();
+        } else {
+            self.state = State.eof;
+            self.reset_buffer();
         }
+        self.next();
     }
 
     pub fn panic(self: *@This()) void {
