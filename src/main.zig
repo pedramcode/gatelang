@@ -6,6 +6,7 @@ const Tokenizer = @import("lexical/tokenizer.zig").Tokenizer;
 const Streamer = @import("lexical/streamer.zig").Streamer;
 const TokenKinds = @import("lexical/streamer.zig").TokenKinds;
 const Parser = @import("parser/syntax_tree.zig").Parser;
+const mecha = @import("mecha");
 
 /// Main function
 pub fn main() !void {
