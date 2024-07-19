@@ -88,9 +88,6 @@ pub const Tokenizer = struct {
 
     fn lex(self: *@This()) void {
         switch (self.*.state) {
-            LexicalState.eof => {
-                self.flush_token();
-            },
             LexicalState.default => {
                 const p = self.peek();
                 if (p) |val| {
@@ -129,6 +126,7 @@ pub const Tokenizer = struct {
                         std.process.exit(1);
                     }
                 } else {
+                    self.flush_token();
                     self.*.state = LexicalState.eof;
                     self.*.lex();
                 }

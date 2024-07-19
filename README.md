@@ -6,6 +6,12 @@
 zig build run
 ```
 
+## TODO
+
+[ ] ipv6 from integer
+[ ] eof diagram
+[ ] eof whitespace & new line diagram
+
 ## FSM diagram of lexical analyzer
 
 ```mermaid
