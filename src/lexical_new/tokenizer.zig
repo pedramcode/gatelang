@@ -17,6 +17,11 @@ pub const Tokenizer = struct {
     buffer: []u8,
     buffer_index: usize = 0,
 
+    // Flags
+    ipv4_completed: bool = false,
+    ipv6_completed: bool = false,
+    integer_should_be_ipv6: bool = false,
+
     pub fn init(allocator: *const std.mem.Allocator, content: []u8) !*@This() {
         const buffer_ptr = try allocator.alloc(u8, BUFFER_SIZE);
         for (0..BUFFER_SIZE) |i| {
@@ -65,7 +70,6 @@ pub const Tokenizer = struct {
 
     pub fn flush_token(self: *@This(), end: bool) void {
         // TODO flushing
-
         std.debug.print("{s}\t{s}\n", .{ @tagName(self.state), self.buffer });
         self.reset_buffer();
         if (!end) {
@@ -119,11 +123,22 @@ pub const Tokenizer = struct {
                     if (is_digit(peeked)) {
                         self.consume(false);
                         self.next();
+                    } else if (peeked == ':') {
+                        self.state = State.ipv6_1;
+                        self.consume(false);
+                        self.next();
+                    } else if (is_hex(peeked)) {
+                        self.integer_should_be_ipv6 = true;
+                        self.consume(false);
+                        self.next();
                     } else if (peeked == '.') {
                         self.state = State.float;
                         self.consume(false);
                         self.next();
                     } else {
+                        if (self.integer_should_be_ipv6) {
+                            self.panic();
+                        }
                         self.flush_token(false);
                     }
                 },
@@ -153,9 +168,14 @@ pub const Tokenizer = struct {
                 },
                 State.ipv4 => {
                     if (is_digit(peeked)) {
+                        self.ipv4_completed = true;
                         self.consume(false);
                         self.next();
                     } else {
+                        if (!self.ipv4_completed) {
+                            self.panic();
+                        }
+                        self.ipv4_completed = false;
                         self.flush_token(false);
                     }
                 },
@@ -246,9 +266,14 @@ pub const Tokenizer = struct {
                 },
                 State.ipv6 => {
                     if (is_hex(peeked)) {
+                        self.ipv6_completed = true;
                         self.consume(false);
                         self.next();
                     } else {
+                        if (!self.ipv6_completed) {
+                            self.panic();
+                        }
+                        self.ipv6_completed = false;
                         self.flush_token(false);
                     }
                 },
@@ -300,7 +325,7 @@ pub const Tokenizer = struct {
                 State.pun_semi => {},
                 State.pun_comma => {},
                 State.err => {
-                    std.debug.print("ERROR", .{});
+                    @panic("ERRPR\n");
                 },
                 else => unreachable,
             }

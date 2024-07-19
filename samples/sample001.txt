@@ -3,3 +3,5 @@
 3.14
 "Hello World! \"MY NAME IS PEDRAM\""
 3
+1a01:0db8:0000:0000:0000:ff00:0042:8329
+var
