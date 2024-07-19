@@ -8,7 +8,7 @@ const HEX: []const u8 = "0123456789ABCDEFabcdef";
 const BUFFER_SIZE: usize = 1024;
 
 pub const Tokenizer = struct {
-    allocator: *const std.mem.Allocator,
+    allocator: *std.mem.Allocator,
     content: []u8,
     index: usize = 0,
     state: State = State.default,
@@ -22,7 +22,7 @@ pub const Tokenizer = struct {
     ipv6_completed: bool = false,
     integer_should_be_ipv6: bool = false,
 
-    pub fn init(allocator: *const std.mem.Allocator, content: []u8) !*@This() {
+    pub fn init(allocator: *std.mem.Allocator, content: []u8) !*@This() {
         const buffer_ptr = try allocator.alloc(u8, BUFFER_SIZE);
         for (0..BUFFER_SIZE) |i| {
             buffer_ptr[i] = 0;
@@ -62,6 +62,12 @@ pub const Tokenizer = struct {
 
     pub fn consume(self: *@This(), skip: bool) void {
         const c = self.peek().?;
+        if (c == '\n') {
+            self.cur_line += 1;
+            self.cur_col = 1;
+        } else {
+            self.cur_col += 1;
+        }
         if (!skip) {
             self.append_buffer(c);
         }
@@ -325,7 +331,13 @@ pub const Tokenizer = struct {
                 State.pun_semi => {},
                 State.pun_comma => {},
                 State.err => {
-                    @panic("ERRPR\n");
+                    const stderr = std.io.getStdErr();
+                    const msg = std.fmt.allocPrint(self.allocator.*, "invalid character at line {d} col {d} ({d}:{d})", .{ self.cur_line, self.cur_col, self.cur_line, self.cur_col }) catch "memory error";
+                    stderr.writeAll(msg) catch |e| {
+                        @panic(@errorName(e));
+                    };
+                    self.allocator.free(msg);
+                    std.process.exit(1);
                 },
                 else => unreachable,
             }

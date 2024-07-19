@@ -12,7 +12,7 @@ const Tokenizer = @import("lexical_new/tokenizer.zig").Tokenizer;
 /// Main function
 pub fn main() !void {
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    const allocator = gpa.allocator();
+    var allocator = gpa.allocator();
 
     const path = "samples/sample001.txt";
     const file = try std.fs.cwd().openFile(path, .{});
