@@ -121,6 +121,10 @@ pub const Tokenizer = struct {
                         // skip
                         self.consume(true);
                         self.next();
+                    } else if (peeked == '!') {
+                        self.state = State.op_not;
+                        self.consume(false);
+                        self.next();
                     } else {
                         self.panic();
                     }
@@ -301,8 +305,19 @@ pub const Tokenizer = struct {
                     self.consume(false);
                     self.next();
                 },
-                State.op_not => {},
-                State.op_neql => {},
+                State.op_not => {
+                    if (peeked == '=') {
+                        self.state = State.op_neql;
+                        self.consume(false);
+                        self.next();
+                    } else {
+                        self.flush_token(false);
+                    }
+                },
+                State.op_neql => {
+                    self.state = State.default;
+                    self.next();
+                },
                 State.op_plus => {},
                 State.op_pluseql => {},
                 State.op_plusplus => {},
